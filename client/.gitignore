@@ -1,9 +1,3 @@
-# Ignore everything
-*
-
-# But not these files...
-!.gitignore
-
 # Dependencies & build
 node_modules/
 dist/
