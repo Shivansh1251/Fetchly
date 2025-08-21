@@ -6,8 +6,8 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import crypto from 'crypto';
-import path from 'path';            // NEW
-import { fileURLToPath } from 'url'; // NEW
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 console.log('[ENV DEBUG] RKP len:', (process.env.RAZORPAY_KEY_ID || '').length, 'RKS len:', (process.env.RAZORPAY_KEY_SECRET || '').length);
@@ -159,14 +159,19 @@ app.get('/api/auth/me', async (req, res) => {
   res.json({ user: { id: user._id, email: user.email, name: user.name } });
 });
 
+const __filename = fileURLToPath(import.meta.url);        // MOVED UP
+const __dirname = path.dirname(__filename);               // MOVED UP
+const PORT = process.env.PORT || 5000;                    // MOVED UP
+const IS_SERVERLESS = !!process.env.VERCEL;               // NEW: detect Vercel
+
 // OPTIONAL: Serve production build (after building client)
-if (process.env.NODE_ENV === 'production') {                  // NEW
-  const clientDist = path.join(__dirname, '../client/dist');  // NEW
-  app.use(express.static(clientDist));                        // NEW
-  app.get('*', (req, res, next) => {                          // NEW
-    if (req.path.startsWith('/api/') || req.path.startsWith('/auth/')) return next(); // NEW
-    res.sendFile(path.join(clientDist, 'index.html'));        // NEW
-  });                                                         // NEW
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.join(__dirname, '../client/dist');
+  app.use(express.static(clientDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/auth/')) return next();
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
 }
 
 // 404 handler (NEW)
@@ -180,12 +185,10 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ message: 'Server error' });
 });
 
-// NOTE: Core roadmap initial backend routes + delayed partner assignment scheduling implemented in routes/payment.js
+if (!IS_SERVERLESS) {                // NEW guard
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
 
-const __filename = fileURLToPath(import.meta.url); // NEW
-const __dirname = path.dirname(__filename);        // NEW
-const PORT = process.env.PORT || 5000;             // NEW
-
-app.listen(PORT, () => {                 // CHANGED
-  console.log(`Server running on http://localhost:${PORT}`);  // CHANGED
-});
+export default app;                  // NEW: allow Vercel serverless handler
