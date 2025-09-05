@@ -9,6 +9,7 @@ import Login from './pages/Login.jsx';
 import AuthCallback from './pages/AuthCallback.jsx';
 import { useAuth } from './hooks/useAuth.js';
 import './index.css'; // NEW tailwind
+import SupportChat from './components/SupportChat.jsx';
 
 function Nav() {
   const { user, logout } = useAuth();
@@ -61,6 +62,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+  <SupportChat />
       <footer className="mt-12 text-center text-xs text-white py-6 bg-gradient-to-r from-brand-dark via-brand-primary to-emerald-600">
         © {new Date().getFullYear()} Fetchly Demo • Rapid Delivery Experience
       </footer>

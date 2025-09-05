@@ -16,6 +16,10 @@ export default function OrderPlaced() {
         const res = await api.get(`/api/orders/${id}`);
         if (cancelled) return;
         setOrder(res.order);
+        if (res.order.status === 'assigned') {
+          // NEW: Show popup when assigned
+          alert('Order placed! Delivery partner assigned.');
+        }
         if (res.order.status !== 'assigned') {
             if (res.order.assignmentScheduledFor) {
               setEta(new Date(res.order.assignmentScheduledFor).getTime());

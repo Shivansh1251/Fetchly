@@ -170,7 +170,7 @@ router.post("/verify", async (req, res) => {
     .digest("hex");
   if (expected !== razorpaySignature) return res.status(400).json({ message: "Signature mismatch" });
 
-  const delayMs = 10000;
+  const delayMs = 20000; // 20 seconds assignment delay
   const assignmentScheduledFor = new Date(Date.now() + delayMs);
 
   const orderDoc = await Order.create({
@@ -204,7 +204,7 @@ router.post("/verify", async (req, res) => {
     total: orderDoc.total,
     status: orderDoc.status,
     assignmentScheduledFor,
-    message: "Order verified. Partner assignment in ~10s."
+    message: "Order verified. Partner assignment in ~20s."
   });
 });
 

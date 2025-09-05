@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import dotenv from 'dotenv';
@@ -61,9 +62,24 @@ mongoose.connect(process.env.MongoDB_URI, {
   console.error('MongoDB connection error:', err);
 });
 
+// Trust reverse proxy (needed for secure cookies behind proxies like Render/Heroku)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
+// Use Mongo-backed session store in production to avoid MemoryStore warning
 app.use(session({
-  secret: process.env.Session_Secret
-    , resave: false, saveUninitialized: false
+  secret: process.env.Session_Secret,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MongoDB_URI,
+    ttl: 14 * 24 * 60 * 60 // 14 days
+  }),
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -168,7 +184,8 @@ const IS_SERVERLESS = !!process.env.VERCEL;               // NEW: detect Vercel
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '../client/dist');
   app.use(express.static(clientDist));
-  app.get('*', (req, res, next) => {
+  // Express 5 uses path-to-regexp v6; '*' is no longer valid. Use a wildcard parameter.
+  app.get('/:path(*)', (req, res, next) => {
     if (req.path.startsWith('/api/') || req.path.startsWith('/auth/')) return next();
     res.sendFile(path.join(clientDist, 'index.html'));
   });
