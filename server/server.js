@@ -184,8 +184,8 @@ const IS_SERVERLESS = !!process.env.VERCEL;               // NEW: detect Vercel
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.join(__dirname, '../client/dist');
   app.use(express.static(clientDist));
-  // Express 5 uses path-to-regexp v6; '*' is no longer valid. Use a wildcard parameter.
-  app.get('/:path(*)', (req, res, next) => {
+  // Express 5 uses path-to-regexp v6; use a compatible wildcard.
+  app.get('/(.*)', (req, res, next) => {
     if (req.path.startsWith('/api/') || req.path.startsWith('/auth/')) return next();
     res.sendFile(path.join(clientDist, 'index.html'));
   });

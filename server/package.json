@@ -5,6 +5,7 @@
     "express": "^5.1.0",
     "express-session": "^1.18.2",
   "connect-mongo": "^5.1.0",
+  "mongodb": "^6.8.0",
     "mongoose": "^8.17.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
